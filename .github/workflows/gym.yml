@@ -33,10 +33,9 @@ jobs:
 
       - name: Start Jupyter Notebook (securely)
         run: |
-          mkdir notebooks
-          jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root=no  # Disable root access
-            --password "${{ secrets.JUPYTERPASSWORD }}" &  # Replace with a strong password
-          sleep 10  # Wait for Jupyter Notebook to start
+            mkdir notebooks
+            jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.password="${{ secrets.JUPYTERPASSWORD }}" &  
+            sleep 10  # Wait for Jupyter Notebook to start
 
       - name: Run ngrok in the background
         run: |
