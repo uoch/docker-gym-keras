@@ -27,6 +27,18 @@ jobs:
         echo "notebook_address=$NOTEBOOK_ADDRESS" >> $GITHUB_ENV
         echo "Jupyter Notebook is running at $NOTEBOOK_ADDRESS"
 
-    - name: Get notebook address
-      run: echo "Notebook address is ${{ env.notebook_address }}"
-      shell: bash
+    - name: Install ngrok
+      run: |
+        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+        unzip ngrok-stable-linux-amd64.zip
+
+    - name: Start ngrok
+      run: ./ngrok http 8888
+      background: true
+
+    - name: Get ngrok tunnel URL
+      id: ngrok
+      run: echo "::set-output name=ngrok_url::$(grep -oP "http://[a-zA-Z0-9]+\.ngrok.io" ${{ github.workspace }}/ngrok.log)"
+
+    - name: Display ngrok tunnel URL
+      run: echo "Ngrok tunnel is ${{ steps.ngrok.outputs.ngrok_url }}"
