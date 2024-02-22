@@ -1,4 +1,4 @@
-name: Run Jupyter Notebook
+name: Run Jupyter Notebook with ngrok
 
 on:
   push:
@@ -33,12 +33,14 @@ jobs:
         unzip ngrok-stable-linux-amd64.zip
 
     - name: Start ngrok
-      run: ./ngrok http 8888
-      background: true
+      run: ./ngrok http 8888 &
+    
+    - name: Wait for ngrok tunnel
+      run: sleep 10
 
     - name: Get ngrok tunnel URL
       id: ngrok
-      run: echo "::set-output name=ngrok_url::$(grep -oP "http://[a-zA-Z0-9]+\.ngrok.io" ${{ github.workspace }}/ngrok.log)"
+      run: echo "::set-output name=ngrok_url::$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')"
 
     - name: Display ngrok tunnel URL
       run: echo "Ngrok tunnel is ${{ steps.ngrok.outputs.ngrok_url }}"
