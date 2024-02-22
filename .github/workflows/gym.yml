@@ -1,47 +1,37 @@
-name: Run Jupyter Notebook with ngrok
+name: Run Jupyter Notebook
 
 on:
   push:
     branches:
-      - main
+      - main  # Or any branch you want to trigger this on
+  pull_request:
+    branches:
+      - main  # Or any branch you want to trigger this on
 
 jobs:
-  build-and-run:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Add ngrok repository and install ngrok
-      run: |
-        curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
-          | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
-          | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
-
-    - name: Add ngrok authtoken
-      run: |
-        ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1.6.0
-
-    - name: Build Docker image
-      run: docker build . -t my-jupyter-notebook
-
-    - name: Run Docker container
-      run: |
-        CONTAINER_ID=$(docker run -d -p 8888:8888 my-jupyter-notebook)
-        CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
-        NOTEBOOK_ADDRESS="http://$CONTAINER_IP:8888"
-        echo "notebook_address=$NOTEBOOK_ADDRESS" >> $GITHUB_ENV
-        echo "Jupyter Notebook is running at $NOTEBOOK_ADDRESS"
-
-    - name: Ngrok Tunnel Action
-      uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
-      with:
-        timeout: 1h
-        port: 8888
-        ngrok_authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}
-        tunnel_type: http
-        save_url_to_filename: tunnelURL.md
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      
+      - name: Install dependencies
+        run: |
+          pip install gym==0.25.2 h5py==3.10.0 keras==2.13.1 keras-rl2==1.0.4 Pillow==10.0.1 tensorflow==2.13.0 numpy==1.23.5 jupyter
+      - name: Install ngrok
+        run: |
+          wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+          unzip ngrok-stable-linux-amd64.zip
+          sudo mv ngrok /usr/local/bin
+      - name: Run Jupyter Notebook
+        run: |
+          mkdir notebooks
+          jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+          ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+          ngrok http 8888
