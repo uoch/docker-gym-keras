@@ -1,0 +1,30 @@
+name: Launch Jupyter Notebook
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    
+    - name: Start Docker container
+      run: |
+        docker pull jnishii/docker-gym-keras
+        docker run -d -p 8888:8888 jnishii/docker-gym-keras
+    
+    - name: Wait for Docker container to start
+      run: |
+        sleep 5
+    
+    - name: Display Jupyter Notebook URL
+      run: |
+        echo "Jupyter Notebook is running at http://localhost:8888"
