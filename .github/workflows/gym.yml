@@ -29,7 +29,7 @@ jobs:
     - name: Build Docker image
       run: docker build . -t my-jupyter-notebook
 
-    - name: Run Dockr container
+    - name: Run Docker container
       run: |
         CONTAINER_ID=$(docker run -d -p 8888:8888 my-jupyter-notebook)
         CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
@@ -37,22 +37,11 @@ jobs:
         echo "notebook_address=$NOTEBOOK_ADDRESS" >> $GITHUB_ENV
         echo "Jupyter Notebook is running at $NOTEBOOK_ADDRESS"
 
-    - name: Install ngrok
-      run: |
-        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
-        unzip ngrok-stable-linux-amd64.zip
-
-    - name: Start ngrok
-      run: ./ngrok http 8888 > ngrok.log &
-
-    - name: Wait for ngrok tunnel
-      run: sleep 20
-
-    - name: Print ngrok log
-      run: cat ngrok.log
-
-    - name: Get ngrok tunnel URL
-      run: echo "NGROK_URL=$(grep -oP "http://[a-zA-Z0-9]+\.ngrok.io" ngrok.log | tail -1)" >> $GITHUB_ENV
-
-    - name: Display ngrok tunnel URL
-      run: echo "Ngrok tunnel is ${{ env.NGROK_URL }}"
+    - name: Ngrok Tunnel Action
+      uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
+      with:
+        timeout: 1h
+        port: 8888
+        ngrok_authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}
+        tunnel_type: http
+        save_url_to_filename: tunnelURL.md
