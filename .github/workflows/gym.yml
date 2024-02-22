@@ -32,15 +32,18 @@ jobs:
         wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
         unzip ngrok-stable-linux-amd64.zip
 
+    - name: Authenticate ngrok
+      run: ./ngrok authtoken 2cjMV5h774y6ZnvXiw57YGEZmvq_MT8LUvQPpRsa3bSLTkPF
+
     - name: Start ngrok
-      run: ./ngrok http 8888 &
+      run: ./ngrok http 8888 > ngrok.log &
     
     - name: Wait for ngrok tunnel
       run: sleep 10
 
     - name: Get ngrok tunnel URL
       id: ngrok
-      run: echo "::set-output name=ngrok_url::$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')"
+      run: echo "::set-output name=ngrok_url::$(grep -oP "http://[a-zA-Z0-9]+\.ngrok.io" ngrok.log | tail -1)"
 
     - name: Display ngrok tunnel URL
       run: echo "Ngrok tunnel is ${{ steps.ngrok.outputs.ngrok_url }}"
