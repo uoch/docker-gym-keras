@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install gym==0.25.2 h5py==3.10.0 keras==2.13.1 keras-rl2==1.0.4 Pillow==10.0.1 tensorflow==2.13.0 numpy==1.23.5 jupyter
-          pip install gym[atari]
+          
       - name: Install ngrok
         run: |
           wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
@@ -33,20 +33,21 @@ jobs:
           
       - name: Run Jupyter Notebook
         run: |
-            mkdir notebooks
-            jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
-            sleep 10  # Wait for Jupyter Notebook to start
-            ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-            ngrok http 8888 > /dev/null &
-            sleep 10  # Wait for ngrok to start
-        
+          mkdir notebooks
+          jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
+          sleep 10  # Wait for Jupyter Notebook to start
+          ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+          nohup ngrok http 8888 > /dev/null 2>&1 &
+          sleep 10  # Wait for ngrok to start
+
       - name: Get ngrok URL
+        run: |
+          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url' > ngrok_url.txt
+          cat ngrok_url.txt
+
+      - name: Save ngrok URL as an output
+        run: echo "::set-output name=ngrok_url::$(cat ngrok_url.txt)"
         id: ngrok
-        run: echo "url=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')" >> $GITHUB_ENV
-        
-      - name: Save state
-        run: echo "JUPYTER_URL=${{ env.url }}" >> $GITHUB_ENV
-      - name: Display ngrok URL
-        run: echo ${{ env.JUPYTER_URL }}
+
       - name: Keep the workflow running
-        run: sleep 31536000
+        run: sleep 31536000  # Approximately one year
