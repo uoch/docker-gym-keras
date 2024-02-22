@@ -21,13 +21,18 @@ jobs:
       run: |
         brew install socat
 
+    - name: Clone docker-gym-keras repository
+      run: |
+        git clone https://github.com/jnishii/docker-gym-keras.git
+        cd docker-gym-keras
+    
     - name: Start Docker container with X forwarding
       run: |
         if [ "$(uname)" == "Darwin" ]; then
           socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" &
         fi
         docker pull jnishii/docker-gym-keras
-        docker run -d -p 8888:8888 jnishii/docker-gym-keras bin/docker-run.sh
+        CONTAINER_ID=$(docker run -d -p 8888:8888 jnishii/docker-gym-keras bin/docker-run.sh)
     
     - name: Wait for Docker container to start
       run: |
@@ -35,5 +40,5 @@ jobs:
     
     - name: Display Jupyter Notebook URL
       run: |
-        CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -lq))
+        CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
         echo "Jupyter Notebook is running at http://$CONTAINER_IP:8888"
