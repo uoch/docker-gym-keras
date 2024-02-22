@@ -36,6 +36,7 @@ jobs:
             mkdir notebooks
             jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
             sleep 5  # Wait for Jupyter Notebook to start
+            ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
             ngrok http 8888 > /dev/null &
             sleep 5  # Wait for ngrok to start
         
@@ -44,7 +45,4 @@ jobs:
         run: echo "url=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')" >> $GITHUB_ENV
         
       - name: Save state
-        run: echo "JUPYTER_URL=${{ env.url }}" >> $GITHUB_ENV
-        
-      - name: Set output
         run: echo "JUPYTER_URL=${{ env.url }}" >> $GITHUB_ENV
