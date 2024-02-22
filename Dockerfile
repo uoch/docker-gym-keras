@@ -6,7 +6,7 @@ RUN pip install gym==0.25.2 h5py==3.10.0 keras==2.13.1 keras-rl2==1.0.4 Pillow==
 # Install Jupyter Notebook
 RUN pip install jupyter
 
-# Set up Jupyter Notebook configuration
+# Set up Jupyter Notebook confuration
 RUN mkdir /notebooks
 WORKDIR /notebooks
 
