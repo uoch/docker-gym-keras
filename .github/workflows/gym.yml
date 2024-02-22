@@ -19,7 +19,9 @@ jobs:
     - name: Start Docker container
       run: |
         docker pull jnishii/docker-gym-keras
-        docker run -d -p 8888:8888 jnishii/docker-gym-keras
+        CONTAINER_ID=$(docker run -d -p 8888:8888 jnishii/docker-gym-keras)
+        CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
+        echo "::set-output name=container_ip::$CONTAINER_IP"
     
     - name: Wait for Docker container to start
       run: |
@@ -27,4 +29,4 @@ jobs:
     
     - name: Display Jupyter Notebook URL
       run: |
-        echo "Jupyter Notebook is running at http://localhost:8888"
+        echo "Jupyter Notebook is running at http://${{ steps.build.outputs.container_ip }}:8888"
