@@ -1,4 +1,4 @@
-name: Run Jupyter Notebook
+name: Run Jupyter Notebook (Securely)
 
 on:
   push:
@@ -15,27 +15,31 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      
+
       - name: Install dependencies
         run: |
           pip install gym==0.25.2 h5py==3.10.0 keras==2.13.1 keras-rl2==1.0.4 Pillow==10.0.1 tensorflow==2.13.0 numpy==1.23.5 jupyter
-          
-      - name: Install ngrok
+
+      - name: Install ngrok (without root)
         run: |
           wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
           unzip ngrok-stable-linux-amd64.zip
-          sudo mv ngrok /usr/local/bin
-          
-      - name: Run Jupyter Notebook
+          mv ngrok /usr/local/bin  # No sudo needed
+
+      - name: Start Jupyter Notebook (securely)
         run: |
           mkdir notebooks
-          jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
+          jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root=no  # Disable root access
+            --password "${{ secrets.JUPYTERPASSWORD }}" &  # Replace with a strong password
           sleep 10  # Wait for Jupyter Notebook to start
+
+      - name: Run ngrok in the background
+        run: |
           ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
           nohup ngrok http 8888 > /dev/null 2>&1 &
           sleep 10  # Wait for ngrok to start
@@ -49,5 +53,5 @@ jobs:
         run: echo "::set-output name=ngrok_url::$(cat ngrok_url.txt)"
         id: ngrok
 
-      - name: Keep the workflow running
-        run: sleep 31536000  # Approximately one year
+      - name: Keep the workflow running (adjusted duration)
+        run: sleep 604800  # One week, less resource-intensive
