@@ -34,13 +34,8 @@ jobs:
       - name: Start ngrok
         run: |
           ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-          ngrok http 8888 > /dev/null &
+          ngrok http 8888 &
           sleep 10  # Wait for ngrok to start
-
-      - name: Get ngrok URL
-        run: |
-          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url' > ngrok_url.txt
-          cat ngrok_url.txt
 
       - name: Start Jupyter Notebook (securely)
         run: |
