@@ -40,7 +40,11 @@ jobs:
       - name: Start Jupyter Notebook (securely)
         run: |
           jupyter notebook --ip=127.0.0.1 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' &
-          sleep 10  # Wait for Jupyter Notebook to start
-
+          sleep 10  # Wait for Jupyter Notebook to start &
+      - name : Get the URL
+        run: |
+          curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url' > url.txt
+          cat url.txt
+      
       - name: Keep the workflow running (adjusted duration)
         run: sleep 604800  # One week, less resource-intensive
