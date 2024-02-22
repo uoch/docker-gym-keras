@@ -32,8 +32,9 @@ jobs:
         wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
         unzip ngrok-stable-linux-amd64.zip
 
-    - name: Authenticate ngrok
-      run: ./ngrok authtoken 2cjMV5h774y6ZnvXiw57YGEZmvq_MT8LUvQPpRsa3bSLTkPF
+    - name: Add ngrok authtoken to configuration file
+      run: |
+        echo "authtoken: 2cjMV5h774y6ZnvXiw57YGEZmvq_MT8LUvQPpRsa3bSLTkPF" > $HOME/.ngrok2/ngrok.yml
 
     - name: Start ngrok
       run: ./ngrok http 8888 > ngrok.log &
