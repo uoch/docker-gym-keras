@@ -36,10 +36,15 @@ jobs:
           mkdir notebooks
           jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
           sleep 5  # Wait for Jupyter Notebook to start
-          ngrok http 8888
+          ngrok http 8888 > /dev/null &
+          sleep 5  # Wait for ngrok to start
           
+      - name: Get ngrok URL
+        id: ngrok
+        run: echo "::set-output name=url::$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')"
+      
       - name: Save state
-        run: echo "JUPYTER_URL=$(ngrok http 8888)" >> $GITHUB_ENV
+        run: echo "JUPYTER_URL=${{ steps.ngrok.outputs.url }}" >> $GITHUB_ENV
       
       - name: Set output
-        run: echo "::set-output name=JUPYTER_URL::$(ngrok http 8888)"
+        run: echo "::set-output name=JUPYTER_URL::${{ steps.ngrok.outputs.url }}"
