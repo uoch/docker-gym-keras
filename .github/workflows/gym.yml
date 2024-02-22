@@ -24,9 +24,9 @@ jobs:
         CONTAINER_ID=$(docker run -d -p 8888:8888 my-jupyter-notebook)
         CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
         NOTEBOOK_ADDRESS="http://$CONTAINER_IP:8888"
-        echo "::set-output name=notebook_address::$NOTEBOOK_ADDRESS"
+        echo "notebook_address=$NOTEBOOK_ADDRESS" >> $GITHUB_ENV
         echo "Jupyter Notebook is running at $NOTEBOOK_ADDRESS"
 
     - name: Get notebook address
-      run: echo "Notebook address is ${{ steps.run.outputs.notebook_address }}"
-      id: run
+      run: echo "Notebook address is ${{ env.notebook_address }}"
+      shell: bash
