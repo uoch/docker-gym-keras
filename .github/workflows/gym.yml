@@ -31,16 +31,10 @@ jobs:
           unzip ngrok-stable-linux-amd64.zip
           mv ngrok /usr/local/bin  # No sudo needed
 
-      - name: Start Jupyter Notebook (securely)
-        run: |
-            mkdir notebooks
-            jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.password="${{ secrets.JUPYTERPASSWORD }}" &  
-            sleep 10  # Wait for Jupyter Notebook to start
-
-      - name: Run ngrok in the background
+      - name: Start ngrok
         run: |
           ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-          nohup ngrok http 8888 > /dev/null 2>&1 &
+          ngrok http 8888 > /dev/null &
           sleep 10  # Wait for ngrok to start
 
       - name: Get ngrok URL
@@ -48,9 +42,10 @@ jobs:
           curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url' > ngrok_url.txt
           cat ngrok_url.txt
 
-      - name: Save ngrok URL as an output
-        run: echo "::set-output name=ngrok_url::$(cat ngrok_url.txt)"
-        id: ngrok
+      - name: Start Jupyter Notebook (securely)
+        run: |
+          jupyter notebook --ip=127.0.0.1 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' &
+          sleep 10  # Wait for Jupyter Notebook to start
 
       - name: Keep the workflow running (adjusted duration)
         run: sleep 604800  # One week, less resource-intensive
