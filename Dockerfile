@@ -10,8 +10,14 @@ RUN pip install jupyter
 RUN mkdir /notebooks
 WORKDIR /notebooks
 
+# Install ngrok
+RUN wget -qO- https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.tgz | tar xvz -C /usr/local/bin
+
 # Expose Jupyter Notebook port
 EXPOSE 8888
 
-# Command to run Jupyter Notebook
-CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+# Add ngrok authtoken as an environment variable
+ENV NGROK_AUTHTOKEN=2cjMV5h774y6ZnvXiw57YGEZmvq_MT8LUvQPpRsa3bSLTkPF
+
+# Command to run Jupyter Notebook and ngrok
+CMD jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root & ngrok http 8888 -authtoken=$NGROK_AUTHTOKEN

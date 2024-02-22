@@ -24,7 +24,7 @@ jobs:
         ngrok config add-authtoken 2cjMV5h774y6ZnvXiw57YGEZmvq_MT8LUvQPpRsa3bSLTkPF
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v1.6.0
 
     - name: Build Docker image
       run: docker build . -t my-jupyter-notebook
